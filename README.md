@@ -12,6 +12,13 @@ You can **type** or **speak** your interests, and the AI will instantly show rel
 
 ---
 
+## $ Current progress status
+
+Everthing is working good , but two major problem i got in testing is -
+1. we need to refresh the page everytime after serching .
+2. the reply / output giving time is slow.
+** we are working on these problem....
+
 ## ✨ Features
 
 ✅ **AI-Powered Club Recommendations** – Uses Google Gemini AI to suggest clubs based on your interests.  
@@ -32,6 +39,11 @@ You can **type** or **speak** your interests, and the AI will instantly show rel
 | **JavaScript**  | Core Logic & Functionality            |
 | **Gemini API**  | AI-powered club recommendations       |
 | **Web Speech API** | Voice assistant integration        |
+
+
+** Screenshots for better understanding _____
+
+
 
 ---
 
