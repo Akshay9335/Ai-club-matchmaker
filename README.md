@@ -43,8 +43,12 @@ Everthing is working good , but two major problem i got in testing is -
 
 ** Screenshots for better understanding _____
 
-
-
----
+1. Example 1--
+<img width="1859" height="843" alt="Screenshot 2025-08-20 215616" src="https://github.com/user-attachments/assets/bff04704-188c-49cf-aeb5-23cb145db893" />
+<img width="1770" height="827" alt="Screenshot 2025-08-20 220009" src="https://github.com/user-attachments/assets/20a9606e-f57e-4922-ab93-2d927a07ea64" />
+<br> <br>
+2. Example 2 --
+<img width="1824" height="808" alt="Screenshot 2025-08-20 220259" src="https://github.com/user-attachments/assets/69ad9315-9c4b-4109-b66f-d45d799a4131" />
+<img width="1817" height="805" alt="Screenshot 2025-08-20 220319" src="https://github.com/user-attachments/assets/a0d3530f-8f80-4860-a2bc-9f7fdfc112c1" />
 
 
