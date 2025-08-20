@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AI Club Matchmaker</title>
+
+    <!-- Fonts & Tailwind -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', sans-serif; background: #000000; color: #e0e7ff; min-height: 100vh;
+            background-image: radial-gradient(at 20% 50%, #1a202c 0%, transparent 60%), radial-gradient(at 80% 80%, #1a202c 0%, transparent 60%);
+            animation: pulse-bg 10s infinite alternate ease-in-out; }
+        @keyframes pulse-bg {
+            0% { background-color: #080d12; background-image: radial-gradient(at 20% 50%, #1a202c 0%, transparent 60%), radial-gradient(at 80% 80%, #1a202c 0%, transparent 60%); }
+            100% { background-color: #0b1118; background-image: radial-gradient(at 20% 50%, #2d3748 0%, transparent 60%), radial-gradient(at 80% 80%, #2d3748 0%, transparent 60%); }
+        }
+        .glass-container { backdrop-filter: blur(16px) saturate(180%); -webkit-backdrop-filter: blur(16px) saturate(180%);
+            background: rgba(23, 27, 34, 0.75); border: 1px solid rgba(48, 54, 61, 0.5);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06), 0 0 20px rgba(37,99,235,0.3);
+            transition: box-shadow 0.3s ease-in-out; border-radius: 1rem; }
+        .glass-container:hover { box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06), 0 0 30px rgba(37,99,235,0.5); }
+        .club-card { backdrop-filter: blur(10px) saturate(150%); -webkit-backdrop-filter: blur(10px) saturate(150%);
+            background: rgba(30, 36, 44, 0.7); border: 1px solid rgba(48, 54, 61, 0.5);
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out; border-radius: 0.5rem; margin-bottom: 1rem; }
+        .club-card:hover { transform: translateY(-5px); box-shadow: 0 0 15px rgba(23,169,255,0.2); }
+        .featured-card { background: rgba(255, 204, 0, 0.1) !important; border: 1px solid #ffd700 !important; box-shadow: 0 0 20px rgba(255,204,0,0.3) !important; }
+        .featured-card:hover { transform: translateY(-5px); box-shadow: 0 0 25px rgba(255,204,0,0.5) !important; }
+        .code-font { font-family: 'Fira Code', monospace; }
+        @keyframes blink-caret { 0%, 100% { border-right-color: transparent; } 50% { border-right-color: #60a5fa; } }
+        .terminal-input { border-right: 2px solid transparent; animation: blink-caret 1s step-end infinite; }
+        .voice-btn-active { animation: pulse-glow 1.5s infinite; color: #22c55e !important; border-color: #22c55e !important; }
+        @keyframes pulse-glow { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.7); } 70% { box-shadow: 0 0 0 10px rgba(34,197,94,0); } 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0); } }
+        .voice-btn-listening { animation: pulse-mic 1.5s infinite; }
+        @keyframes pulse-mic { 0% { transform: scale(1); } 50% { transform: scale(1.1); } 100% { transform: scale(1); } }
+        textarea { background: #1f2937 !important; border: 2px solid #374151 !important; color: #e5e7eb !important; border-radius: 0.5rem; }
+        textarea:focus { outline: none; border-color: #3b82f6 !important; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+        button { transition: all 0.2s ease-in-out; }
+        button:hover { transform: scale(1.05); }
+        .main-title { background: linear-gradient(135deg, #60a5fa, #3b82f6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .loading-dots { animation: loading-dots 1.5s infinite; }
+        @keyframes loading-dots { 0%, 20% { opacity: 0; } 50% { opacity: 1; } 80%, 100% { opacity: 0; } }
+    </style>
+</head>
+<body class="p-4 sm:p-8 flex flex-col items-center min-h-screen">
+    <div class="max-w-3xl w-full shadow-2xl p-6 sm:p-10 my-8 glass-container">
+        <div class="flex justify-center items-center gap-4 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-blue-400">
+                <rect width="18" height="18" x="3" y="3" rx="2" ry="2"></rect>
+                <line x1="12" x2="12" y1="8" y2="16"></line>
+                <line x1="8" x2="16" y1="12" y2="12"></line>
+            </svg>
+            <h1 class="text-3xl sm:text-4xl font-bold text-center main-title">AI Club Matchmaker</h1>
+        </div>
+        <p class="text-center text-gray-400 mb-8 code-font">System Initialized. Awaiting Input...</p>
+
+        <div class="mb-6">
+            <label for="interestsInput" class="block text-blue-400 font-semibold mb-2 code-font">&gt; Enter your interests:</label>
+            <div class="flex gap-4">
+                <textarea id="interestsInput" class="w-full h-32 px-4 py-3 rounded-lg border-2 resize-none shadow-sm code-font" placeholder="e.g., 'I really love to code and build things with a team. I also enjoy playing soccer and helping out in my community.'"></textarea>
+                <div class="flex flex-col items-center gap-2">
+                    <button id="voiceBtn" class="flex-shrink-0 bg-gray-800 border-2 border-gray-700 w-16 h-16 rounded-full flex items-center justify-center text-gray-400 transition-colors duration-200 hover:text-green-400 hover:border-green-400 focus:outline-none focus:ring-4 focus:ring-green-400 focus:ring-opacity-50" title="Click to speak" aria-pressed="false">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-mic">
+                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/>
+                            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                            <line x1="12" x2="12" y1="19" y2="22"/>
+                        </svg>
+                    </button>
+                    <div id="srStatus" class="text-xs text-gray-400 code-font min-h-[1rem]"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-center mb-4">
+            <button id="findClubsBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full transition-all duration-300 focus:outline-none focus:ring-4 focus:ring-blue-300 transform hover:scale-105 shadow-lg">
+                Find My Clubs
+            </button>
+        </div>
+
+        <div id="assistantSummary" class="text-sm text-gray-300 code-font mb-6 hidden"></div>
+
+        <div id="results" class="space-y-6">
+            <p id="loadingIndicator" class="text-center text-gray-400 italic hidden code-font loading-dots">Searching for clubs...</p>
+        </div>
+
+        <!-- Diagnostics / Test Cases -->
+        <details class="mt-8 text-sm text-gray-400">
+            <summary class="cursor-pointer">Diagnostics & Built-in Tests</summary>
+            <div class="mt-3 grid grid-cols-2 gap-2">
+                <button class="bg-gray-800 px-3 py-2 rounded" onclick="runTest('gaming')">Test: gaming</button>
+                <button class="bg-gray-800 px-3 py-2 rounded" onclick="runTest('coding hackathon developer')">Test: coding</button>
+                <button class="bg-gray-800 px-3 py-2 rounded" onclick="runTest('yoga wellness fitness')">Test: yoga</button>
+                <button class="bg-gray-800 px-3 py-2 rounded" onclick="runTest('photography')">Test: no-match</button>
+                <button class="bg-gray-800 px-3 py-2 rounded" onclick="simulateVoiceError('no-speech')">Simulate voice error: no-speech</button>
+                <button class="bg-gray-800 px-3 py-2 rounded" onclick="simulateVoiceError('not-allowed')">Simulate voice error: not-allowed</button>
+            </div>
+        </details>
+    </div>
+
+    <script>
+        console.log('Script loaded successfully');
+
+        // ---------------------------
+        // CLUBS CATALOG (curated keywords)
+        // ---------------------------
+        const clubs = [
+            { name: "National Service Scheme (NSS)", description: "NSS is a government-sponsored public service program under the Ministry of Youth Affairs & Sports, India. It aims to develop students' personality through community service, fostering values of social responsibility, discipline, and leadership.", keywords: ["social", "work", "service", "leadership", "personality", "development", "teamwork", "community", "volunteer"], contact: "Dr. Nirmal Sharma, 8266080984, nirmals@srmist.edu.in" },
+            { name: "GARGOYLES", description: "The Fashion Club at SRM IST Delhi NCR Campus helps its members grow, develop and express themselves in a mutual love for fashion. It provides a place for students to express artistic freedom in the fashion world.", keywords: ["fashion", "genz", "dressing", "modeling", "bollywood", "artist", "style", "design"], contact: "Dr. Garima Pandey, 9897297255, garimap@srmist.edu.in" },
+            { name: "Kalamgiri", description: "SRM Literary Club. This provides a platform for the students to write, discuss, and hold debates to stimulate their brains in the literary arts.", keywords: ["literary", "shayari", "poem", "poetry", "debate", "writing", "essay", "literature"], contact: "Dr. Anchal Mishra(+91 99106 54499, hod.efl.ncr@srmist.edu.in), Dr. Shalini Sharma(+91 97607 93537, shalinip@srmist.edu.in)" },
+            { name: "National Cadet Corps (NCC)", description: "The NCC develops Character, Comradeship, Discipline, Leadership, Secular Outlook, Spirit of Adventure and Ideals of Selfless Service amongst the Youth of the Country.", keywords: ["leadership", "ncc", "adventure", "army", "nda", "fitness", "country", "discipline"], contact: "Dr. Sandeep Kumar, 9012355511, sandeepd@srmist.edu.in" },
+            { name: "AARZOO", description: "SRM Dramatics Club. This is a platform for all nukkad natak enthusiasts and theatre lovers to learn, explore, manage, and perform the beautiful art of stage play.", keywords: ["aarzoo", "dramatics", "nukkad", "natak", "stage", "drama", "dance", "act", "bollywood", "acting", "cultural", "extrovert"], contact: "Dr. Pallavi Jain, 9219703700, pallavij@srmist.edu.in" },
+            { name: "AXIONS", description: "SRM Dance Club is a symbol of aesthetics and grace encouraging the dancers from the various states of India to come together and share their passions in dance.", keywords: ["dance", "dancing", "extrovert", "cultural", "songs", "stage", "bollywood", "aesthetics", "grace"], contact: "Dr. Megha Gupta Chaudhary, 9411176543, meghagua@srmist.edu.in" },
+            { name: "Magan", description: "Music Club. This is a confluence of the musicians from the various states of India to come together and share their passions in instrumental and vocal music.", keywords: ["singer", "sing", "music", "songs", "song", "tune", "artist", "musician", "instrumentalist"], contact: "Dr. Oshin Sharma, 7619187971, oshins1@srmist.edu.in" },
+            { name: "SRM Yoga Club", description: "It is an inclusive group that focuses on providing a safe and light-hearted space for students to de-stress and empower themselves through the practice of yoga.", keywords: ["yoga", "fitness", "health", "healthy", "lifestyle", "wellness", "destress"], contact: "Ms. Sonia Pal, 9068626418, soniapak@srmist.edu.in" },
+            { name: "SRMMUN", description: "The MUN society of SRM IST Delhi NCR campus focuses on competing at various MUNs as well as organizing the SRM-MUN every year.", keywords: ["conferences", "debates", "programs", "event", "management", "mun", "politics", "speaking"], contact: "Dr. Dhowmya Bhatt, 8859000710, dhowmyab@srmist.edu.in" },
+            { name: "The Indian Society for Technical Education (ISTE)", description: "ISTE is a leading national professional non-profit society that supports technical education systems with enhanced focus on the career and personality development of our students.", keywords: ["tech", "technical", "career", "coders", "personality", "education", "engineering"], contact: "Dr. Niranjan Lal, niranjal@srmist.edu.in" },
+            { name: "Computer Society of India (CSI)", description: "The Computer Society of India (CSI) is the largest association of computer professionals in India, established in 1965 to advance the field of information technology.", keywords: ["coding", "coder", "hackathons", "tech", "technical", "resume", "software", "engineering", "seminar", "computer", "science", "information", "technology"], contact: "Dr. Rolly Gupta, rollyg@srmist.edu.in; Dr. Lalit Kumar Sagar, lalis@srmist.edu.in", isPromoted: true },
+            { name: "Hackhound", description: "HackHound is a technical club focused on fostering a vibrant tech community, particularly through hackathons. It's known for organizing events that encourage innovation, problem-solving, and collaboration among tech enthusiasts.", keywords: ["hackathons", "resume", "code", "coding", "tech", "innovations", "technical", "problem", "solving", "collaboration", "workshops", "mentorship"], contact: "Dr. Oshin Sharma, 7619187871, oshins1@srmist.edu.in" },
+            { name: "GeeksforGeeks(GFG)", description: "GeeksforGeeks (GFG) is a prominent Indian educational technology company and online platform specializing in computer science and programming resources.", keywords: ["code", "tech", "innovations", "international", "networking", "resume", "placement", "computer", "science", "programming", "education"], contact: "gfg@mycollege.edu" },
+            { name: "E-Sports club", description: "A college esports club provides a structured environment for students to engage in competitive video gaming, fostering teamwork, strategic thinking, and potentially leading to career opportunities.", keywords: ["game", "gaming", "esports", "mobile", "bgmi", "valorant", "video", "games", "teamwork", "competitive"], contact: "esports@mycollege.edu" },
+            { name: "Genesis", description: "A newly made exclusive oriented web3 society of srmist delhi ncr campus.", keywords: ["microsoft", "events", "tech", "seminars", "code", "workshops", "web3", "web", "development", "blockchain"], contact: "genesis@mycollege.edu" }
+        ];
+
+        const interestsInput = document.getElementById('interestsInput');
+        const findClubsBtn = document.getElementById('findClubsBtn');
+        const resultsContainer = document.getElementById('results');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const voiceBtn = document.getElementById('voiceBtn');
+        const srStatus = document.getElementById('srStatus');
+        const assistantSummary = document.getElementById('assistantSummary');
+
+        let recognition; // SpeechRecognition instance
+        let isListening = false; // track state to avoid InvalidStateError
+        let spokeOnce = false; // prevent duplicate triggers
+
+        function setSrStatus(msg, type = 'info') {
+            const colors = { info: 'text-gray-400', good: 'text-green-400', warn: 'text-yellow-400', error: 'text-red-400' };
+            srStatus.className = `text-xs code-font min-h-[1rem] ${colors[type] || colors.info}`;
+            srStatus.textContent = msg || '';
+        }
+
+        function showAssistantSummary(text) {
+            if (!text) { assistantSummary.classList.add('hidden'); assistantSummary.textContent = ''; return; }
+            assistantSummary.textContent = text;
+            assistantSummary.classList.remove('hidden');
+        }
+
+        // ---------------------------
+        // SIMPLE KEYWORD MATCHING (improved + generic-word filter)
+        // ---------------------------
+        function simpleKeywordMatching(userInput) {
+            console.log('Using improved keyword matching');
+            const userKeywords = userInput.toLowerCase().split(/[^a-z0-9+#]+/).filter(Boolean);
+
+            const ignoreKeywords = ["photo", "photography", "video", "videography", "pic", "picture", "media", "photos"];
+
+            const clubsWithScores = clubs.map(club => {
+                let score = 0;
+                const clubKeywords = club.keywords.map(kw => kw.toLowerCase()).filter(kw => !ignoreKeywords.includes(kw));
+
+                userKeywords.forEach(userWord => {
+                    if (userWord.length > 2) {
+                        clubKeywords.forEach(clubWord => {
+                            if (clubWord === userWord) score += 2; // exact match weighs more
+                            else if (clubWord.includes(userWord) || userWord.includes(clubWord)) score += 1; // partial
+                        });
+                    }
+                });
+
+                return { ...club, score };
+            });
+
+            const promotedClubs = clubsWithScores.filter(club => club.isPromoted && club.score > 0);
+            const otherClubs = clubsWithScores.filter(club => !club.isPromoted);
+            const sortedOtherClubs = otherClubs.sort((a, b) => b.score - a.score);
+            const topClubs = [...promotedClubs, ...sortedOtherClubs].filter(club => club.score > 0);
+
+            return topClubs.slice(0, 5);
+        }
+
+        // ---------------------------
+        // SMART AI MATCH (NLU + ranking)
+        // ---------------------------
+        async function aiSmartMatch(userInput) {
+            // Prepare compact catalog for the model
+            const catalog = clubs.map(c => ({ name: c.name, keywords: c.keywords })).slice(0, 30); // safety bound
+
+            const prompt = `You are matching a student's interests to clubs. Given the student's free-text interests and a catalog (name + keywords), return a JSON array with objects: {name: string, score: number (0-3), reasons: string, matched_keywords: string[]}.
+- Score 3 = perfect fit, 2 = relevant, 1 = slight relevance, 0 = unrelated.
+- Prefer gaming -> E-Sports; coding/tech -> CSI/Hackhound/GFG/ISTE; debate/MUN -> SRMMUN; yoga/wellness -> SRM Yoga Club; music -> Magan; dance -> AXIONS; dramatics -> AARZOO; service/volunteer -> NSS; leadership/discipline -> NCC; fashion -> GARGOYLES; web3/blockchain -> Genesis.
+- Output only JSON. No extra text.
+Student: ${JSON.stringify(userInput)}
+Catalog: ${JSON.stringify(catalog)}`;
+
+            const payload = {
+                contents: [{ role: 'user', parts: [{ text: prompt }] }],
+                generationConfig: {
+                    responseMimeType: 'application/json',
+                    responseSchema: { type: 'ARRAY', items: { type: 'OBJECT', properties: { name: { type: 'STRING' }, score: { type: 'NUMBER' }, reasons: { type: 'STRING' }, matched_keywords: { type: 'ARRAY', items: { type: 'STRING' } } }, required: ['name','score'] } }
+                }
+            };
+
+            const apiKey = 'AIzaSyACZrV10TT76PpeCFkR1-lkYlDrO5yfEds';
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+            const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            if (!response.ok) throw new Error(`AI smart request failed: ${response.status}`);
+
+            const result = await response.json();
+            const jsonText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (!jsonText) throw new Error('AI smart: invalid response');
+
+            let arr = [];
+            try { arr = JSON.parse(jsonText); } catch (e) { throw new Error('AI smart: JSON parse failed'); }
+
+            // Map scores back to our clubs and sort
+            const scored = clubs.map(c => {
+                const found = arr.find(x => x.name === c.name);
+                const score = Math.max(0, Math.min(3, Number(found?.score || 0)));
+                return { ...c, score, _reasons: found?.reasons || '', _matched: found?.matched_keywords || [] };
+            });
+
+            const promoted = scored.filter(c => c.isPromoted && c.score > 0);
+            const others = scored.filter(c => !c.isPromoted);
+            const sorted = others.sort((a,b) => b.score - a.score);
+            const top = [...promoted, ...sorted].filter(c => c.score > 0);
+
+            // Normalize to comparable scale with fallback (3->6,2->4,1->2) so it mixes with other methods if needed
+            return top.slice(0, 5).map(c => ({ ...c, score: c.score * 2 }));
+        }
+
+        // ---------------------------
+        // AI KEYWORD MATCHING (Gemini) fallback
+        // ---------------------------
+        async function aiKeywordMatching(userInput) {
+            console.log('Attempting AI keyword matching');
+
+            const prompt = `Based on the user's text about their interests, generate a JSON array of up to 10 single-word keywords. Keep them relevant to college clubs only.
+User text: "${userInput}"`;
+
+            const payload = {
+                contents: [{ role: 'user', parts: [{ text: prompt }] }],
+                generationConfig: {
+                    responseMimeType: 'application/json',
+                    responseSchema: { type: 'ARRAY', items: { type: 'STRING' } }
+                }
+            };
+
+            const apiKey = 'AIzaSyACZrV10TT76PpeCFkR1-lkYlDrO5yfEds';
+            const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+            const response = await fetch(apiUrl, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload) });
+            if (!response.ok) throw new Error(`API request failed: ${response.status}`);
+
+            const result = await response.json();
+            const jsonText = result?.candidates?.[0]?.content?.parts?.[0]?.text;
+            if (!jsonText) throw new Error('Invalid AI response');
+
+            let aiKeywords = [];
+            try { aiKeywords = JSON.parse(jsonText); } catch(e) { throw new Error('AI JSON parse failed'); }
+
+            const ignoreKeywords = ["photo", "photography", "video", "videography", "pic", "picture", "media", "photos"];
+            const filteredAIKeywords = aiKeywords.filter(kw => !ignoreKeywords.includes(String(kw).toLowerCase()));
+
+            const clubsWithScores = clubs.map(club => {
+                let score = 0;
+                const clubKeywords = club.keywords.map(kw => kw.toLowerCase());
+                filteredAIKeywords.forEach(aiKeyword => {
+                    const k = String(aiKeyword).toLowerCase();
+                    if (clubKeywords.includes(k)) score += 2; // exact
+                    else if (clubKeywords.some(ck => ck.includes(k) || k.includes(ck))) score += 1; // partial
+                });
+                return { ...club, score };
+            });
+
+            const promotedClubs = clubsWithScores.filter(c => c.isPromoted && c.score > 0);
+            const otherClubs = clubsWithScores.filter(c => !c.isPromoted);
+            const sortedOtherClubs = otherClubs.sort((a, b) => b.score - a.score);
+            const topClubs = [...promotedClubs, ...sortedOtherClubs].filter(c => c.score > 0);
+
+            return topClubs.slice(0, 5);
+        }
+
+        // ---------------------------
+        // MAIN MATCH FLOW
+        // ---------------------------
+        async function findMatchingClubs() {
+            console.log('findMatchingClubs called');
+            const userInput = interestsInput.value.trim();
+            if (!userInput) { alert('Please enter your interests first!'); return; }
+
+            resultsContainer.innerHTML = '';
+            loadingIndicator.classList.remove('hidden');
+
+            try {
+                let topClubs = [];
+                let used = 'smart-ai';
+                try {
+                    topClubs = await aiSmartMatch(userInput);
+                } catch (e1) {
+                    console.warn('Smart AI failed, fallback to AI keywords', e1);
+                    used = 'ai-keywords';
+                    try {
+                        topClubs = await aiKeywordMatching(userInput);
+                    } catch (e2) {
+                        console.warn('AI keyword match failed, fallback to simple', e2);
+                        used = 'simple';
+                        topClubs = simpleKeywordMatching(userInput);
+                    }
+                }
+
+                console.log('Final matched clubs:', topClubs);
+
+                // UX voice + text summary
+                let summaryText = '';
+                if (topClubs.length > 0) {
+                    const list = topClubs.slice(0,3).map((c,i)=> `${i+1}. ${c.name}`).join(' ');
+                    summaryText = `I analyzed your interests using ${used}. Top matches: ${list}`;
+                } else {
+                    summaryText = 'I could not find any clubs matching your interests. Try different keywords like coding, dance, music, drama, yoga.';
+                }
+                showAssistantSummary(summaryText);
+
+                if ('speechSynthesis' in window) {
+                    try { window.speechSynthesis.cancel(); window.speechSynthesis.speak(new SpeechSynthesisUtterance(summaryText)); } catch(e) { console.warn('TTS error', e); }
+                }
+
+                // Render results
+                if (topClubs.length > 0) {
+                    topClubs.forEach(club => {
+                        const clubCard = document.createElement('div');
+                        clubCard.className = `p-6 rounded-lg club-card ${club.isPromoted ? 'featured-card' : ''}`;
+                        const reasonLine = club._reasons ? `<p class="text-xs text-gray-400 mt-1">Why: ${club._reasons}</p>` : '';
+                        const mkLine = club._matched && club._matched.length ? `<p class="text-xs text-gray-500">Matched: ${club._matched.join(', ')}</p>` : '';
+                        clubCard.innerHTML = `
+                            ${club.isPromoted ? `<div class="mb-2 flex items-center justify-between"><span class="inline-flex items-center rounded-full bg-yellow-600 px-3 py-0.5 text-xs font-medium text-white code-font">⭐ Featured Club: Host of this event</span></div>` : ''}
+                            <h3 class="text-xl font-semibold mb-2 text-white">${club.name}</h3>
+                            <p class="text-gray-400 mb-3">${club.description}</p>
+                            <p class="text-sm text-gray-300 code-font"><strong>Contact:</strong> ${club.contact}</p>
+                            <p class="text-xs text-gray-500 mt-2">Match Score: ${club.score ?? 'N/A'}</p>
+                            ${reasonLine}
+                            ${mkLine}
+                        `;
+                        resultsContainer.appendChild(clubCard);
+                    });
+                } else {
+                    resultsContainer.innerHTML = `
+                        <div class="text-center p-8 rounded-lg club-card">
+                            <p class="text-gray-400 italic text-lg">No clubs found matching your interests.</p>
+                            <p class="text-gray-500 text-sm mt-2">Try keywords like: coding, dance, music, sports, art, drama, yoga</p>
+                        </div>
+                    `;
+                }
+
+            } catch (error) {
+                console.error('Error in findMatchingClubs:', error);
+                resultsContainer.innerHTML = `
+                    <div class="bg-red-900 border border-red-700 text-red-300 px-4 py-3 rounded relative" role="alert">
+                        <strong class="font-bold">Error!</strong>
+                        <span class="block sm:inline">Something went wrong: ${error.message}</span>
+                    </div>
+                `;
+            } finally {
+                loadingIndicator.classList.add('hidden');
+            }
+        }
+
+        // ---------------------------
+        // VOICE RECOGNITION (robust; no thrown errors)
+        // ---------------------------
+        const supportsSR = 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window;
+        const isSecure = window.isSecureContext; // needed for mic on many browsers
+        let preflightDone = false;
+
+        function attachRecognitionHandlers(rec) {
+            rec.continuous = false;
+            rec.interimResults = false;
+            rec.lang = 'en-US';
+
+            rec.onstart = () => {
+                console.log('Voice recognition started');
+                isListening = true;
+                spokeOnce = false;
+                voiceBtn.classList.add('voice-btn-active', 'voice-btn-listening');
+                voiceBtn.setAttribute('aria-pressed', 'true');
+                setSrStatus('Listening…', 'good');
+                findClubsBtn.disabled = true;
+            };
+
+            rec.onresult = (event) => {
+                console.log('Voice recognition result received');
+                try {
+                    const transcript = event.results?.[0]?.[0]?.transcript || '';
+                    const trimmed = transcript.trim();
+                    if (!trimmed) return;
+                    if (interestsInput.value.trim().length > 0) {
+                        interestsInput.value = (interestsInput.value + ' ' + trimmed).trim();
+                    } else {
+                        interestsInput.value = trimmed;
+                    }
+                    setSrStatus('Heard: "' + trimmed + '"', 'good');
+                    if (!spokeOnce) { spokeOnce = true; findMatchingClubs(); }
+                } catch (e) {
+                    console.warn('onresult handling error', e);
+                    setSrStatus('Could not process speech result.', 'warn');
+                }
+            };
+
+            rec.onend = () => {
+                console.log('Voice recognition ended');
+                isListening = false;
+                voiceBtn.classList.remove('voice-btn-active', 'voice-btn-listening');
+                voiceBtn.setAttribute('aria-pressed', 'false');
+                if (!spokeOnce && interestsInput.value.trim().length > 1) {
+                    findMatchingClubs();
+                }
+                findClubsBtn.disabled = false;
+                if (!supportsSR) setSrStatus('Speech recognition not supported.', 'error');
+            };
+
+            rec.onerror = (event) => {
+                const code = (event && event.error) ? String(event.error) : 'unknown';
+                console.warn('Speech recognition error:', code, event);
+                isListening = false;
+                voiceBtn.classList.remove('voice-btn-active', 'voice-btn-listening');
+                voiceBtn.setAttribute('aria-pressed', 'false');
+                findClubsBtn.disabled = false;
+
+                let msg = 'Voice error';
+                let level = 'error';
+                switch (code) {
+                    case 'not-allowed':
+                    case 'service-not-allowed':
+                        msg = 'Microphone blocked. Allow mic access in site settings.'; break;
+                    case 'no-speech':
+                        msg = "Didn't catch that. Try speaking closer to the mic."; level = 'warn'; break;
+                    case 'audio-capture':
+                        msg = 'No microphone detected.'; break;
+                    case 'aborted':
+                        msg = 'Listening stopped.'; level = 'info'; break;
+                    case 'network':
+                        msg = 'Network issue with speech service.'; break;
+                    case 'bad-grammar':
+                    case 'language-not-supported':
+                        msg = 'Speech input not recognized.'; break;
+                    default:
+                        msg = 'Speech recognition unavailable right now.';
+                }
+                setSrStatus(msg, level);
+            };
+        }
+
+        function createRecognition() {
+            try {
+                const Ctor = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!Ctor) return null;
+                const rec = new Ctor();
+                attachRecognitionHandlers(rec);
+                return rec;
+            } catch (e) {
+                console.warn('Failed to create recognition', e);
+                return null;
+            }
+        }
+
+        async function preflightMicPermission() {
+            if (!navigator.mediaDevices?.getUserMedia || preflightDone) return true;
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                stream.getTracks().forEach(t => t.stop());
+                preflightDone = true;
+                return true;
+            } catch (e) {
+                setSrStatus('Mic permission denied. Enable it in browser settings.', 'error');
+                return false;
+            }
+        }
+
+        async function startListening() {
+            if (!supportsSR) { setSrStatus('Speech recognition not supported in this browser.', 'error'); return; }
+            if (!isSecure) { setSrStatus('Mic requires HTTPS or localhost.', 'warn'); }
+            const ok = await preflightMicPermission();
+            if (!ok) return;
+
+            if (!recognition) recognition = createRecognition();
+            if (!recognition) { setSrStatus('Could not initialize speech recognition.', 'error'); return; }
+
+            if (isListening) { try { recognition.stop(); } catch (_) {} return; }
+            try { recognition.start(); }
+            catch (e) { console.warn('recognition.start error', e); setSrStatus('Could not start listening. Try again.', 'error'); }
+        }
+
+        function stopListening() { if (recognition && isListening) { try { recognition.stop(); } catch (_) {} } }
+
+        // ---------------------------
+        // EVENTS
+        // ---------------------------
+        if (supportsSR) {
+            voiceBtn.addEventListener('click', () => { if (isListening) { stopListening(); } else { startListening(); } });
+        } else {
+            voiceBtn.disabled = true; voiceBtn.title = 'Your browser does not support voice recognition.'; setSrStatus('Speech recognition not supported.', 'error');
+        }
+
+        findClubsBtn.addEventListener('click', () => { findMatchingClubs(); });
+        interestsInput.addEventListener('keypress', (e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); findMatchingClubs(); } });
+
+        console.log('All event listeners attached');
+
+        // ---------------------------
+        // Diagnostics helpers ("test cases")
+        // ---------------------------
+        function runTest(text) { interestsInput.value = text; findMatchingClubs(); }
+        function simulateVoiceError(code) { setSrStatus('Simulated voice error: ' + code, code === 'no-speech' ? 'warn' : 'error'); }
+        window.runTest = runTest; window.simulateVoiceError = simulateVoiceError;
+    </script>
+</body>
+</html>
